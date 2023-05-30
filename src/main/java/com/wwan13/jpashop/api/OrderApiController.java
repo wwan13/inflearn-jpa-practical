@@ -1,10 +1,13 @@
 package com.wwan13.jpashop.api;
 
 import com.wwan13.jpashop.domain.*;
+import com.wwan13.jpashop.repository.OrderQueryDto;
+import com.wwan13.jpashop.repository.OrderQueryRepository;
 import com.wwan13.jpashop.repository.OrderRepository;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.time.LocalDateTime;
@@ -18,6 +21,7 @@ public class OrderApiController {
 
 
     private final OrderRepository orderRepository;
+    private final OrderQueryRepository orderQueryRepository;
 
 
     @GetMapping("/api/v1/orders")
@@ -48,6 +52,21 @@ public class OrderApiController {
                 .map(o -> new OrderDto(o))
                 .collect(toList());
         return result;
+    }
+
+    @GetMapping("/api/v3.1/orders")
+    public List<OrderDto> ordersV3_page(@RequestParam(value = "offset", defaultValue = "0") int offset,
+                                        @RequestParam(value = "limit", defaultValue = "1000") int limit) {
+        List<Order> orders = orderRepository.findAllWithMemberDelivery(offset, limit);
+        List<OrderDto> result = orders.stream()
+                .map(o -> new OrderDto(o))
+                .collect(toList());
+        return result;
+    }
+
+    @GetMapping("/api/v4/orders")
+    public List<OrderQueryDto> ordersV4() {
+        return orderQueryRepository.findOrderQueryDtos();
     }
 
     @Data
